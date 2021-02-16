@@ -2,5 +2,6 @@ __pycache__/
 .vscode/
 .idea/
 env/
+images/
 *.log
 settings.py
