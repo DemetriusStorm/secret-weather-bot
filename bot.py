@@ -22,41 +22,33 @@ PROXY = {
 }
 
 
-def get_smile():
-    smile = choice(settings.USER_EMOJI)
-    smile = emojize(smile, use_aliases=True)
-    return smile
+def get_smile(user_data):
+    """Get emoji from emoji-dict."""
+    if 'emoji' not in user_data:
+        smile = choice(settings.USER_EMOJI)
+        return emojize(smile, use_aliases=True)
+    return user_data['emoji']
 
 
 def greet_user(update, context):
-    """
-    Greet func for /start message.
-    :param update:
-    :param context:
-    :return:
-    """
-    update.message.reply_text('Hello! {0}'.format(get_smile()))
+    """Greet func for /start message."""
+    context.user_data['emoji'] = get_smile(context.user_data)
+    update.message.reply_text('Hello! {0}'.format(context.user_data['emoji']))
 
 
 def talk_to_me(update, context):
-    """
-
-    :param update:
-    :param context:
-    :return:
-    """
+    """Return echo user message."""
+    context.user_data['emoji'] = get_smile(context.user_data)
     user_message = update.message.text
-    update.message.reply_text('{0} {1}'.format(get_smile(), user_message))
+    update.message.reply_text('{0} {1}'.format(
+        user_message,
+        context.user_data['emoji'],
+    ))
     # print(update)
 
 
 def guess_number(update, context):
-    """
-
-    :param update:
-    :param context:
-    :return:
-    """
+    """Get user number."""
     if context.args:
         try:
             user_number = int(context.args[0])
@@ -69,11 +61,7 @@ def guess_number(update, context):
 
 
 def play_random_number(user_number):
-    """
-
-    :param user_number:
-    :return:
-    """
+    """Play game guess number."""
     bot_number = randint(user_number - 10, user_number + 10)
     if user_number > bot_number:
         message = 'Your number is {0}, my number is {1}, you win!'.format(
@@ -94,12 +82,7 @@ def play_random_number(user_number):
 
 
 def send_cat_picture(update, context):
-    """
-
-    :param update:
-    :param context:
-    :return:
-    """
+    """Choose random image from list."""
     cat_images_list = glob('images/cat*.jp*g')
     random_cat_image = choice(cat_images_list)
     context.bot.send_photo(
