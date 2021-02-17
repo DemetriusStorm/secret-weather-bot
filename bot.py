@@ -4,7 +4,7 @@ Simple Telegram bot
 import logging
 import settings
 
-from telegram import ReplyKeyboardMarkup
+from telegram import ReplyKeyboardMarkup, KeyboardButton
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from random import randint, choice
 from glob import glob
@@ -97,7 +97,19 @@ def send_cat_picture(update, context):
 
 
 def main_keyboard():
-    return ReplyKeyboardMarkup([['Gemme a cat'], ['Test']])
+    return ReplyKeyboardMarkup([
+        ['Gemme a cat', KeyboardButton('My coordinates', request_location=True)]
+    ])
+
+
+def user_coordinates(update, context):
+    context.user_data['emoji'] = get_smile(context.user_data)
+    coordinates = update.message.location
+    update.message.reply_text('Your coordinates {0} {1}'.format(
+        coordinates,
+        context.user_data['emoji'],
+    ), reply_markup=main_keyboard())
+    print(coordinates)
 
 
 def main():
@@ -111,6 +123,9 @@ def main():
 
     dp.add_handler(
         MessageHandler(Filters.regex('^(Gemme a cat)$'), send_cat_picture))
+    dp.add_handler(
+        MessageHandler(Filters.location, user_coordinates)
+    )
     dp.add_handler(
         MessageHandler(Filters.text, talk_to_me))
 
