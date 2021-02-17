@@ -4,6 +4,7 @@ Simple Telegram bot
 import logging
 import settings
 
+from telegram import ReplyKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from random import randint, choice
 from glob import glob
@@ -33,7 +34,10 @@ def get_smile(user_data):
 def greet_user(update, context):
     """Greet func for /start message."""
     context.user_data['emoji'] = get_smile(context.user_data)
-    update.message.reply_text('Hello! {0}'.format(context.user_data['emoji']))
+    update.message.reply_text('Hello! {0}'.format(
+        context.user_data['emoji']),
+        reply_markup=main_keyboard(),
+    )
 
 
 def talk_to_me(update, context):
@@ -57,7 +61,7 @@ def guess_number(update, context):
             message = 'Enter an integer!'
     else:
         message = 'Enter a number..'
-    update.message.reply_text(message)
+    update.message.reply_text(message, reply_markup=main_keyboard())
 
 
 def play_random_number(user_number):
@@ -88,7 +92,12 @@ def send_cat_picture(update, context):
     context.bot.send_photo(
         chat_id=update.effective_chat.id,
         photo=open(random_cat_image, 'rb'),
+        reply_markup=main_keyboard(),
     )
+
+
+def main_keyboard():
+    return ReplyKeyboardMarkup([['Gemme a cat'], ['Test']])
 
 
 def main():
@@ -99,7 +108,11 @@ def main():
     dp.add_handler(CommandHandler('start', greet_user))
     dp.add_handler(CommandHandler('guess', guess_number))
     dp.add_handler(CommandHandler('cat', send_cat_picture))
-    dp.add_handler(MessageHandler(Filters.text, talk_to_me))
+
+    dp.add_handler(
+        MessageHandler(Filters.regex('^(Gemme a cat)$'), send_cat_picture))
+    dp.add_handler(
+        MessageHandler(Filters.text, talk_to_me))
 
     logging.info('Bot started')
 
